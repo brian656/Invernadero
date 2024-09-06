@@ -1,0 +1,118 @@
+#include <DHT.h>
+#include <DHT_U.h>
+#include <Wire.h>
+//#include <WiFi.h>
+#include <LCD.h>      // libreria para funciones de LCD
+#include <LiquidCrystal_I2C.h>    // libreria para LCD por I2C
+
+#define MQ135_PIN A0 // Pin analógico al que está conectado el sensor MQ135
+#define DHTPIN 13   // El pin digital al que está conectado el sensor DHT11
+
+
+LiquidCrystal_I2C lcd1 (0x27, 2, 1, 0, 4, 5, 6, 7);//defincion de la pantalla para la temperatura
+
+int PIN =7;
+int CAire = 0;
+int vent = 0;
+const int pinVentilador = 9;
+
+DHT dht(DHTPIN, DHT11);
+
+
+void setup(void) {
+  Serial.begin(9600);
+  
+  // Configurar el pin del ventilador como salida
+  pinMode(pinVentilador, OUTPUT);
+    pinMode(PIN, OUTPUT);
+
+  //Para el lcd1
+  lcd1.setBacklightPin(3,POSITIVE);  // puerto P3 de PCF8574 como positivo
+  lcd1.setBacklight(HIGH);   // habilita iluminacion posterior de LCD
+  lcd1.begin(16, 2);     // 16 columnas por 2 lineas para LCD 1602A
+  lcd1.clear();      // limpia pantalla
+
+  dht.begin();
+
+}
+
+void loop(void) {
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
+    CAire = analogRead(0);
+    float vent = 0;
+    float foco = 0;
+
+    if (vent > 21) {
+      digitalWrite(pinVentilador, HIGH);
+    } else{
+      digitalWrite(pinVentilador, LOW);
+      }
+    if (foco > 70) {
+      digitalWrite(PIN, HIGH);
+    } else{
+      digitalWrite(PIN, LOW);
+      }
+    //Para la temperatura
+    lcd1.setCursor(0, 0);
+    lcd1.print("Temperatura:");
+    lcd1.setCursor(0, 1);
+    lcd1.print(temperature);
+    lcd1.print(" C");
+    delay(5000);
+    lcd1.clear();
+    //Para la humedad
+    lcd1.setCursor(0, 0);
+    lcd1.print("Humedad: ");
+    lcd1.setCursor(0, 1);
+    lcd1.print(humidity);
+    lcd1.print(" %");
+    delay(5000);
+    lcd1.clear();
+    //Para la calidad del aire
+    lcd1.setCursor(0, 0);
+    lcd1.print("CO2: ");
+    lcd1.setCursor(0, 1);
+    lcd1.print(CAire);
+    lcd1.print(" ppm");
+    delay(5000);
+    lcd1.clear();
+    
+    //declaramos nueva variable para demostrar que el ventilador si funciona
+    vent = temperature+10;
+    foco = 100;
+    if (vent > 25) {
+      digitalWrite(pinVentilador, HIGH);
+    } else{
+      digitalWrite(pinVentilador, LOW);
+      }
+    if (foco > 70) {
+      digitalWrite(PIN, HIGH);
+    } else{
+      digitalWrite(PIN, LOW);
+      }
+    //segunda vuelta para variar aproposito el valor de la temperatura Y PPM
+    lcd1.setCursor(0, 0);
+    lcd1.print("Temperatura:");
+    lcd1.setCursor(0, 1);
+    lcd1.print(vent);
+    lcd1.print(" C");
+    delay(5000);
+    lcd1.clear();
+    //humedad
+    lcd1.setCursor(0, 0);
+    lcd1.print("Humedad: ");
+    lcd1.setCursor(0, 1);
+    lcd1.print(humidity);
+    lcd1.print(" %");
+    delay(5000);
+    lcd1.clear();
+    //calidad del aire
+    lcd1.setCursor(0, 0);
+    lcd1.print("CO2: ");
+    lcd1.setCursor(0, 1);
+    lcd1.print(CAire);
+    lcd1.print(" ppm");
+    delay(5000);
+    //lcd1.clear();
+}
